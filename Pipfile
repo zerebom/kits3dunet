@@ -1,0 +1,26 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pycodestyle = "*"
+flake8 = "*"
+
+[packages]
+tensorboard = "==1.14.0"
+tensorflow-estimator = "==1.14.0"
+tensorflow-gpu = "==1.14.0"
+scikit-learn = "*"
+numpy = "*"
+matplotlib = "*"
+seaborn = "*"
+tqdm = "*"
+plotly = "*"
+SimpleITK = "*"
+opencv-python = "*"
+pyyaml = "*"
+requests = "*"
+
+[requires]
+python_version = "3.6"
