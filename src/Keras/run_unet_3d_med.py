@@ -1,3 +1,16 @@
+from utils import send_line_notification
+from Loss.loss_funcs import categorical_crossentropy, bg_recall, bg_precision, bg_dice, \
+    hcc_recall, hcc_precision, hcc_dice, \
+    cyst_recall, cyst_precision, cyst_dice, \
+    angioma_recall, angioma_precision, angioma_dice
+import yaml
+from dataset.dataset import Loader, Generator #SingleGenerator
+from AdaBound import AdaBoundOptimizer
+from callbacks import CometLogImageUploader, CustomizedLearningRateScheduler
+from pathlib import Path
+import tensorflow as tf
+import numpy as np
+from model.unet_3d import UNet3D
 import argparse
 import os
 import datetime
@@ -5,19 +18,6 @@ import warnings
 import sys
 warnings.filterwarnings('ignore')
 sys.path.append('/home/kakeya/Desktop/higuchi/20191107/src/Keras')
-from model.unet_3d import UNet3D
-import numpy as np
-import tensorflow as tf
-from pathlib import Path
-from callbacks import CometLogImageUploader, CustomizedLearningRateScheduler
-from AdaBound import AdaBoundOptimizer
-from dataset.dataset import Loader, Generator, SingleGenerator
-import yaml
-from Loss.loss_funcs import categorical_crossentropy, bg_recall, bg_precision, bg_dice, \
-    hcc_recall, hcc_precision, hcc_dice, \
-    cyst_recall, cyst_precision, cyst_dice, \
-    angioma_recall, angioma_precision, angioma_dice
-from utils import send_line_notification
 
 # main.pyてきなやつ
 # wpがあれば、ここからモデルの重みをロードする。
@@ -75,17 +75,18 @@ def ConstructCallback(model, WEIGHT_SAVE_DIR):
 '''
 1. setting GPU
 2. load dataset tng,val
-3. make Generator 
+3. make Generator
 4. fit Generator
 vscodeから実行するとおかしくなっちゃう
 '''
 
-def split_train_val(fold=0):
-    train=[['001', '002', '003', '004', '005', '006', '007', '008', '009', '010', '011', '012', '013', '016', '017', '018', '019', '025', '028', '029', '030', '031', '032', '039'], ['014', '015', '021', '022', '023', '024', '026', '033', '034', '035', '036', '037', '038', '040', '041', '044', '045', '046', '047', '051', '055', '057', '064', '065'], ['053', '058', '060', '061', '062', '063', '066', '067', '068', '069', '071', '072', '073', '074', '076', '077', '078', '079', '083', '086', '093', '094'], ['082', '088', '090', '095', '096', '097', '098', '101', '102', '103', '104', '105', '107', '109', '112', '113', '117', '118', '122', '123', '125', '130']]
-    valid=train.pop(fold)
-    #flatten
-    train=sum(train,[])
-    return train,valid
+# def split_train_val(fold=0):
+#     train=[['001', '002', '003', '004', '005', '006', '007', '008', '009', '010', '011', '012', '013', '016', '017', '018', '019', '025', '028', '029', '030', '031', '032', '039'], ['014', '015', '021', '022', '023', '024', '026', '033', '034', '035', '036', '037', '038', '040', '041', '044', '045', '046', '047', '051', '055', '057', '064', '065'], ['053', '058', '060', '061', '062', '063', '066', '067', '068', '069', '071', '072', '073', '074', '076', '077', '078', '079', '083', '086', '093', '094'], ['082', '088', '090', '095', '096', '097', '098', '101', '102', '103', '104', '105', '107', '109', '112', '113', '117', '118', '122', '123', '125', '130']]
+#     valid=train.pop(fold)
+#     #flatten
+#     train=sum(train,[])
+#     return train,valid
+
 
 def main(args):
     config = ConfigGpu(args.gpu_number)
@@ -94,19 +95,20 @@ def main(args):
         ROOT_DIR = yml['DIR']['ROOT']
         DATA_DIR = yml['DIR']['DATA']
         WEIGHT_SAVE_DIR = yml['DIR']['OWN']
-        WEIGHT_PATH=yml['PRED_WEIGHT'] if 'PRED_WEIGHT' in yml else None
-        train_cid = yml['CID']['TRAIN'] if not 'FOLD' in yml else split_train_val(yml['FOLD'])[0]
-        val_cid = yml['CID']['VAL'] if not 'FOLD' in yml else split_train_val(yml['FOLD'])[1]
+        WEIGHT_PATH = yml['PRED_WEIGHT'] if 'PRED_WEIGHT' in yml else None
+        train_cid = yml['CID']['TRAIN'] if 'FOLD' not in yml else split_train_val(yml['FOLD'])[0]
+        val_cid = yml['CID']['VAL'] if 'FOLD' not in yml else split_train_val(yml['FOLD'])[1]
         train_patch = yml['PATCH_DIR']['TRAIN']
         val_patch = yml['PATCH_DIR']['VAL']
         patch_shape = yml['PATCH_SHAPE']
-        epochs =yml['EPOCH'] if 'EPOCH' in yml else 50
+        epochs = yml['EPOCH'] if 'EPOCH' in yml else 50
         lr = yml['LR'] if 'LR' in yml else 1e-3
-        final_lr =yml['FINAL_LR'] if 'FINAL_LR' in yml else 1e-1
+        final_lr = yml['FINAL_LR'] if 'FINAL_LR' in yml else 1e-1
         BATCH_SIZE = yml['BATCH_SIZE']
         BATCH_GENERATOR = eval(yml['GENERATOR']) if 'GENERATOR' in yml else Generator
         SINGLE = True if 'SINGLE' in yml else False
-
+        USE_LABLE = yml['USE_LABEL'] if 'USE_LABEL' else None
+        NCLASS = sum(USE_LABLE) if 'USE_LABEL' else 3
 
     # return dataframe require:patch_npy
     loader = Loader(DATA_DIR, patch_dir_name=train_patch)
@@ -121,18 +123,40 @@ def main(args):
         counts = np.cbrt(np.where(counts != 0, counts, 1))
         Y = Y * 1e0 / counts
         return Y
-        
+
     print(BATCH_GENERATOR, type(BATCH_GENERATOR))
-    train_generator = BATCH_GENERATOR(train_dataset, batch_size=BATCH_SIZE, nclasses=3, enable_random_crop=True,
-                                      crop_size=(48, 48, 16), threshold=float('inf'), weight_method=weight_method,single=SINGLE)
-    valid_generator = BATCH_GENERATOR(valid_dataset, batch_size=BATCH_SIZE, nclasses=3, enable_random_crop=False,
-                                      crop_size=(48, 48, 16), threshold=float('inf'), weight_method=weight_method,single=SINGLE)
+    train_generator = BATCH_GENERATOR(
+        train_dataset,
+        batch_size=BATCH_SIZE,
+        nclasses=NCLASS,
+        enable_random_crop=True,
+        use_label=USE_LABLE,
+        crop_size=(
+            48,
+            48,
+            16),
+        threshold=float('inf'),
+        weight_method=weight_method,
+        single=SINGLE)
+    valid_generator = BATCH_GENERATOR(
+        valid_dataset,
+        batch_size=BATCH_SIZE,
+        nclasses=NCLASS,
+        enable_random_crop=False,
+        use_label=USE_LABLE,
+        crop_size=(
+            48,
+            48,
+            16),
+        threshold=float('inf'),
+        weight_method=weight_method,
+        single=SINGLE)
 
     with tf.Session(config=config) as sess:
         # (self, input_shape, nclasses, use_bn=True, use_dropout=True)
         # num of channe2l is 2(SE2,SE3)
-        model = UNet3D(patch_shape, 3)
-        if WEIGHT_PATH != None:
+        model = UNet3D(patch_shape, NCLASS)
+        if WEIGHT_PATH is not None:
             if Path(WEIGHT_PATH).is_file():
                 path = Path(WEIGHT_PATH)
                 initial_epoch = int(path.name.split('-')[1][1:4])
