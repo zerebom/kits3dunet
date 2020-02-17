@@ -1,46 +1,48 @@
-## 腎臓がんの自動識別用ライブラリ
-
-## caution
-
-
-https://qiita.com/Ka-k/items/cb942855ab669ff60630
-
-
-腎臓がんの自動識別用ライブラリ
+腎臓がんの自動識別ライブラリ
 ====
 
-Overview
 
 ## Description
+3DUNetを使って腎臓がんの自動識別を行う。  
+限られたメモリの中で精度を出す必要があるため、mhaデータを適切に切り分けて学習する。
 
-## Demo
-ymlを書く  
-python3 ./src/Keras/run_unet_3d_med.py -yml で学習  
-pred.sh YML GPU_NUM で推論  
-
-
-## VS. 
+以下手順
+1. ./src/create_patch.pyを使って、kits2019のデータをミニパッチに分ける
+1. experimentの中に実験名を書いたフォルダ(以下A)を作成する
+1. Aの中にハイパーパラメータを書いたymlファイルを書く
+1. ./src/run_unet_3d_med.pyにymlファイルを渡して学習
+1. pred.shを使って推論、プロットを行う
 
 ## Requirement
+- cuda10.0
+- nvidia-driver 430.x.x
+- ubuntu 18.04 
+
 
 ## Usage
+
 ### create patch
+```
+# dir内に余計なデータがないように消す
 sudo rm -rf ./*/tumor*standard*
-sudo rm -rf /home/kakeya/ssd/strange/*/tumor*
 
 for i in `seq -w 000 160`; do
+# kits2019が格納されているdir
 cd /home/kakeya/ssd/strange/00${i}
 pwd
-sudo python3 /home/kakeya/Desktop/higuchi/20191107/src/create_patch2.py SE2.nii.gz SE3.nii.gz kidney.nii.gz CCRCC.nii.gz cyst.nii.gz --size 60 60 20 
-sudo python3 /home/kakeya/Desktop/higuchi/20191107/src/create_patch2.py SE2.nii.gz SE3.nii.gz kidney.nii.gz CCRCC.nii.gz cyst.nii.gz --size 48 48 16
+# 使用するnii.gz sizeを選択する
+sudo python3 ./src/create_patch2.py SE2.nii.gz SE3.nii.gz kidney.nii.gz CCRCC.nii.gz cyst.nii.gz --size 60 60 20 
+sudo python3 ./src/create_patch2.py SE2.nii.gz SE3.nii.gz kidney.nii.gz CCRCC.nii.gz cyst.nii.gz --size 48 48 16
+```
 
 ## Install
-
-## Contribution
-
-## Licence
-
+```
+pipenv install
+pipenv shell
+python3 ./src/Keras/run_unet_3d_med.py -yml
+```
 
 ## Author
-
 [zerebom](https://github.com/zerebom)
+## 参考
+[pipenvの使い方](https://medium.com/@kjmczk/python-pipenv-2fbcd681f534)

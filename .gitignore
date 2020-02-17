@@ -3,3 +3,4 @@ __pycache__/*
 *.mha
 *.pyc
 *.h5
+*.hdf5

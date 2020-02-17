@@ -11,3 +11,4 @@ plotly
 requests
 opencv-python
 pyyaml
+ruamel.yaml
