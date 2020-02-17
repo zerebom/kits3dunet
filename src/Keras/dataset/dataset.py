@@ -116,7 +116,6 @@ class Generator(Sequence):
         X, Y = self.__augment(X, Y, self.enable_random_crop, self.__random_crop)
         X, Y = self.__augment(X, Y, self.enable_random_norm, self.__random_norm)
         Y = to_categorical(Y, num_classes=self.nclasses)
-        # print('medium',X.shape,Y.shape)
         if self.clip:
             X = np.clip(self.clip[0], self.clip[1])
         if self.weight_method:
@@ -124,7 +123,6 @@ class Generator(Sequence):
         if self.single:
             # X = X[:, :, :, :, 0]
             X = X[..., np.newaxis]
-        # print(X.shape,Y.shape)
         return X, Y
 
     def __next__(self):

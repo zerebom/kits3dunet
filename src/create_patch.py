@@ -9,37 +9,7 @@ from pathlib import Path
 # /home/higuchi/Desktop/kits19/data/case_00000/segmentation.nii.gz
 
 '''
-間違えて途中まで作っちゃったとき↓
-sudo rm -rf ./*/tumor*standard*
-'''
-'''
-for i in `seq -w 000 160`; do
-cd /home/higuchi/Desktop/higuchi/data/00${i}
-pwd
-sudo python3 /home/higuchi/Desktop/higuchi/lab1107/src/create_hist_equal_patch.py SE2.nii.gz SE3.nii.gz kidney.nii.gz CCRCC.nii.gz cyst.nii.gz --size 60 60 20 -st -sf standard05
-sudo python3 /home/higuchi/Desktop/higuchi/lab1107/src/create_hist_equal_patch.py SE2.nii.gz SE3.nii.gz kidney.nii.gz CCRCC.nii.gz cyst.nii.gz --size 48 48 16 -st -sf standard05
-'''
-
-
-'''
-for i in `seq -w 000 160`; do
-cd /home/kakeya/Desktop/higuchi/data/00${i}
-sudo python3 /home/kakeya/Desktop/higuchi/20191107/src/create_hist_equal_patch.py SE2.nii.gz SE3.nii.gz kidney.nii.gz CCRCC.nii.gz cyst.nii.gz --suffix standard05 --size 60 60 20
-sudo python3 /home/kakeya/Desktop/higuchi/20191107/src/create_hist_equal_patch.py SE2.nii.gz SE3.nii.gz kidney.nii.gz CCRCC.nii.gz cyst.nii.gz --suffix standard05 --size 48 48 16
-pwd
-
-done
-'''
-
-'''
-保存先ディレクトリが違う場所にある場合
-for i in `seq -w 000 160`; do
-cd /home/kakeya/Desktop/higuchi/data/00${i}
-sudo python3 /home/kakeya/Desktop/higuchi/20191107/src/create_hist_equal_patch.py kld_inkid_SE2.nii.gz kld_SE3.nii.gz kidney.nii.gz CCRCC.nii.gz cyst.nii.gz -sd /home/kakeya/ssd/data/00${i} --suffix KLD_inkid --size 60 60 20
-sudo python3 /home/kakeya/Desktop/higuchi/20191107/src/create_hist_equal_patch.py kld_inkid_SE2.nii.gz kld_SE3.nii.gz kidney.nii.gz CCRCC.nii.gz cyst.nii.gz -sd /home/kakeya/ssd/data/00${i} --suffix KLD_inkid --size 48 48 16
-pwd
-
-done
+パッチを作るコード
 '''
 
 import argparse
