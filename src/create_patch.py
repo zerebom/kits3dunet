@@ -10,6 +10,11 @@ from pathlib import Path
 
 '''
 パッチを作るコード
+for i in `seq -w 000 160`; do
+cd /home/kakeya/ssd/kits19/data/case_00${i}
+sudo python3 /home/kakeya/Desktop/higuchi/kits3dunet/src/create_patch.py imaging.nii.gz segmentation.nii.gz --size 60 60 20
+sudo python3 /home/kakeya/Desktop/higuchi/kits3dunet/src/create_patch.py imaging.nii.gz segmentation.nii.gz --size 48 48 16
+pwd
 '''
 
 import argparse
@@ -185,7 +190,8 @@ def main(args):
         # バッチ内に腫瘍領域が存在しない
         # パッチ内に除外領域が含まれる
         # 腫瘍領域がパッチボクセルの 80% 以上
-        if (crop_label != 0).sum() <= np.prod(args.size) * 0.01:
+        if (crop_label!=0).sum() <= np.prod(args.size) * 0.001 or (crop_label!=0).sum() >= np.prod(args.size) * 0.8:
+            return
                 # or crop_exclude.sum() != 0 \
                 # or (crop_label!=0).sum() >= np.prod(args.size) * 0.8:
             return
