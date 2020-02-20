@@ -1,0 +1,2 @@
+image_name: ['imaging.nii.gz']
+label_name: ['segmentation.nii.gz']

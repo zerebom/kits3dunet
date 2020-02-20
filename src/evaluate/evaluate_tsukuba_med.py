@@ -13,7 +13,7 @@ python3 /home/kakeya/Desktop/higuchi/20191021/Keras/src/test/evaluate_tsukuba_me
 
 def get_yml(args):
     with open(args.setting_yml_path) as file:
-        return yaml.load(file)
+        return yaml.safe_load(file)
 
 
 def ParseArgs():
@@ -108,15 +108,7 @@ def EvaluateMain(csv_file, reference_file, resource_file):
             tqdm.write(f'  dice: {dice}, recall: {recall}, precision: {precision}')
             csv_file.write(f'{reference_file.name},{ref_island_label},{size},{dice},{recall},{precision},{res_labels},{island_type}\n')'''
 
-    # identified_res_image = sitk.ConnectedComponent(res_image)
-    # identified_res_array = sitk.GetArrayFromImage(identified_res_image)
-    # identified_ref_image = sitk.ConnectedComponent(ref_image)
-    # identified_ref_array = sitk.GetArrayFromImage(identified_ref_image)
-    # dice_per_case, recall_per_case, precision_per_case = CalcMetrics(identified_ref_array, identified_res_array)
-    #dice_per_case, recall_per_case, precision_per_case = CalcMetrics(ref_array, res_array)
 
-    # sitk.WriteImage(identified_ref_image, 'identified/identified_ref_' + reference_file.name, True)
-    # sitk.WriteImage(identified_res_image, 'identified/identified_res_' + resource_file.name,  True)
     csv_file.flush()
 
     return 0, 0, 0, 0
