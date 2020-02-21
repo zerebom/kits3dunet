@@ -130,8 +130,9 @@ class Generator(Sequence):
         X, Y = self.__augment(X, Y, self.enable_random_crop, self.__random_crop)
         X, Y = self.__augment(X, Y, self.enable_random_norm, self.__random_norm)
         # if self.nclasses > 2:
-        Y = to_categorical(Y, num_classes=self.nclasses+1)
-        Y = self.binary_preprocess(Y)
+        Y = to_categorical(Y, num_classes=self.nclasses)
+        if self.use_label:
+            Y = self.binary_preprocess(Y)
 
         if self.clip:
             X = np.clip(self.clip[0], self.clip[1])

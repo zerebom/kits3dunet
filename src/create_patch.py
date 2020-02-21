@@ -11,11 +11,18 @@ from pathlib import Path
 
 '''
 パッチを作るコード
-for i in `seq -w 000 160`; do
+for i in `seq -w 000 210`; do
 cd /home/kakeya/ssd/kits19/data/case_00${i}
-sudo python3 /home/kakeya/Desktop/higuchi/kits3dunet/src/create_patch.py imaging.nii.gz segmentation.nii.gz --size 60 60 20
-sudo python3 /home/kakeya/Desktop/higuchi/kits3dunet/src/create_patch.py imaging.nii.gz segmentation.nii.gz --size 48 48 16
+sudo python3 /home/kakeya/Desktop/higuchi/kits3dunet/src/create_patch.py imaging.nii.gz segmentation.nii.gz --size 60 60 20 --overlap 0.5 0.5 0.5
+sudo python3 /home/kakeya/Desktop/higuchi/kits3dunet/src/create_patch.py imaging.nii.gz segmentation.nii.gz --size 48 48 16 --overlap 0.5 0.5 0.5 
 pwd
+
+for i in `seq -w 000 210`; do
+cd ~/ssd/Desktop/kits19/data/case_00${i}
+sudo python3 /home/higuchi/ssd/Desktop/kits_3DUNet/src/create_patch.py imaging.nii.gz segmentation.nii.gz --size 60 60 20 --overlap 3 3 2 -sf 332
+sudo python3 /home/higuchi/ssd/Desktop/kits_3DUNet/src/create_patch.py imaging.nii.gz segmentation.nii.gz --size 48 48 16 --overlap 3 3 2 -sf 332
+pwd
+done;
 '''
 
 import argparse
@@ -23,10 +30,12 @@ import argparse
 
 def ParseArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument('image_volume_list', nargs=2)
-    parser.add_argument('label_volume_list', nargs=3)
+    #nii.gzの数でnargsを決める
+    parser.add_argument('image_volume_list', nargs=1)
+    parser.add_argument('label_volume_list', nargs=1)
     # nargs...受け取る引数の数。?なら0 or 1こ
     parser.add_argument('--size', nargs=3, type=int)
+    parser.add_argument('--overlap', nargs=3, type=float, default=[0.2, 0.2, 0.5])
     parser.add_argument('-sd', '--save_dir', type=str)
     parser.add_argument('-he', '--hist_equal', action='store_true')
     parser.add_argument('-st', '--standardization', action='store_true')
@@ -49,9 +58,9 @@ def ValidateArgs(args):
         if not pathlib.Path(image_volume).is_file():
             print(f'Image data({image_volume}) is not file.')
             return False
-    if not pathlib.Path('kidney.nii.gz'):
-        print('no kidney voxel')
-        return False
+    # if not pathlib.Path('kidney.nii.gz'):
+    #     print('no kidney voxel')
+    #     return False
 
     for i, label_volume in enumerate(args.label_volume_list):
         if not pathlib.Path(label_volume).is_file():
@@ -151,7 +160,7 @@ def main(args):
     tmp_array = sitk.GetArrayFromImage(image_list[0])
     # タプルを足して4次元にしている...?
     image_array = np.zeros(tmp_array.shape + (len(image_list),), dtype=tmp_array.dtype)
-    kid_aray = sitk.GetArrayFromImage(sitk.ReadImage('kidney.nii.gz'))
+    kid_aray = sitk.GetArrayFromImage(sitk.ReadImage(args.label_volume_list[0]))
 
     for i, image in enumerate(image_list):
         # add channel
@@ -174,14 +183,14 @@ def main(args):
 
     # パッチの読み取り範囲をOriginとサイズから、最小のボックスになるように調整する
     read_range = image.GetSize()
-
+    print(read_range)
     # パディングした全領域を出力パッチサイズでラスタスキャンする
     # 出力パッチサイズで割り切れずはみ出してしまう領域は、均等にずらして確保する
     # TODO:Augmentation内でクロップするほうがよさそう？
-    z_crop_point = getListCropPoint(read_range[0] - args.size[2], args.size[2] // 2)
-    y_crop_point = getListCropPoint(read_range[1] - args.size[1], args.size[1] // 5)
-    x_crop_point = getListCropPoint(read_range[2] - args.size[0], args.size[0] // 5)
-
+    z_crop_point = getListCropPoint(read_range[0] - args.size[2], args.size[2] // args.overlap[2])
+    y_crop_point = getListCropPoint(read_range[1] - args.size[1], args.size[1] // args.overlap[1])
+    x_crop_point = getListCropPoint(read_range[2] - args.size[0], args.size[0] // args.overlap[0])
+    print(z_crop_point,y_crop_point,x_crop_point)
     def make_patch(x, y, z, patch_index):
         #　ラベルはネットワークの出力パッチサイズの大きさでクロップする
         crop_label = label_array[x:x + args.size[0], y:y + args.size[1], z:z + args.size[2]]
@@ -189,11 +198,10 @@ def main(args):
         # バッチ内に腫瘍領域が存在しない
         # パッチ内に除外領域が含まれる
         # 腫瘍領域がパッチボクセルの 80% 以上
-        if (crop_label!=0).sum() <= np.prod(args.size) * 0.001 or (crop_label!=0).sum() >= np.prod(args.size) * 0.8:
+        if (crop_label != 0).sum() <= np.prod(args.size) * 0.001 or (crop_label != 0).sum() >= np.prod(args.size) * 0.8:
             return
-                # or crop_exclude.sum() != 0 \
-                # or (crop_label!=0).sum() >= np.prod(args.size) * 0.8:
-            return
+            # or crop_exclude.sum() != 0 \
+            # or (crop_label!=0).sum() >= np.prod(args.size) * 0.8:
         if crop_label.shape[2] != args.size[2]:
             # src:http://nonbiri-tereka.hatenablog.com/entry/2014/06/22/171504
             # デバッグツール

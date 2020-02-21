@@ -65,7 +65,7 @@ def ConstructCallback(model, WEIGHT_SAVE_DIR):
 
     callbacks = []
     callbacks.append(tf.keras.callbacks.ModelCheckpoint(filepath=str(
-        weight_filename), save_best_only=True, save_weights_only=True))
+        weight_filename), save_best_only=False, save_weights_only=True))
     callbacks.append(tf.keras.callbacks.CSVLogger(str(results_filename)))
     # callbacks.append(CustomizedLearningRateScheduler(patience=10, decay=0.8))
 
@@ -107,8 +107,8 @@ def main(args):
         BATCH_SIZE = yml['BATCH_SIZE']
         BATCH_GENERATOR = eval(yml['GENERATOR']) if 'GENERATOR' in yml else Generator
         SINGLE = True if 'SINGLE' in yml else False
-        USE_LABLE = yml['USE_LABEL'] if 'USE_LABEL' else None
-        NCLASS = sum(USE_LABLE) if 'USE_LABEL' else 3
+        USE_LABLE = yml['USE_LABEL'] if 'USE_LABEL' in yml else None
+        NCLASS = sum(USE_LABLE) if 'USE_LABEL' in yml else 3
 
     # return dataframe require:patch_npy
     loader = Loader(DATA_DIR, patch_dir_name=train_patch)
