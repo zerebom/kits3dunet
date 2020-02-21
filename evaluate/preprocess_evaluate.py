@@ -72,10 +72,14 @@ def main(args, yml):
     for res in resorce_file_list:
         # .nii.gzはピリオドが二回あるので、splitで除去した
 
-        kidney_path = (DATA_DIR / res.name.split('.')[0] / 'kidney.nii.gz')
-        ccrcc_path = (DATA_DIR / res.name.split('.')[0] / 'CCRCC.nii.gz')
-        cyst_path = (DATA_DIR / res.name.split('.')[0] / 'cyst.nii.gz')
-        label = make_concat_label(kidney_path, ccrcc_path, cyst_path)
+        # kidney_path = (DATA_DIR / res.name.split('.')[0] / 'kidney.nii.gz')
+        # ccrcc_path = (DATA_DIR / res.name.split('.')[0] / 'CCRCC.nii.gz')
+        # cyst_path = (DATA_DIR / res.name.split('.')[0] / 'cyst.nii.gz')
+        # label = make_concat_label(kidney_path, ccrcc_path, cyst_path)
+        label = (DATA_DIR / res.name.split('.')[0] / 'segmentation.nii.gz')
+        print(label)
+        label = sitk.GetArrayFromImage(sitk.ReadImage(str(label)))
+        print(label)
         sitk.WriteImage(label, str(OWN_DIR / 'ref' / res.name))
 
 
@@ -84,3 +88,4 @@ if __name__ == "__main__":
     yml = get_yml(args)
     if ValidateArgs(args, yml):
         main(args, yml)
+

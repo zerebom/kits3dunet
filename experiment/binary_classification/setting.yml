@@ -1,7 +1,7 @@
 DIR:
   ROOT: /home/higuchi/ssd/Desktop/kits_3DUNet
   DATA: /home/higuchi/ssd/Desktop/kits19/data
-  OWN: /home/higuchi/ssd/Desktop/kits_3DUNet/experiment/first_kits
+  OWN: /home/higuchi/ssd/Desktop/kits_3DUNet/experiment/binary_classification
 CID:
   TRAIN: ['000', '003', '004', '006', '007', '009', '010', '014', '015', '018', '027',
     '031', '032', '033', '037', '039', '040', '049', '050', '052', '062', '063', '064',
@@ -20,4 +20,5 @@ PATCH_SHAPE: [48, 48, 16, 1]
 BATCH_SIZE: 16
 GENERATOR: Generator
 SINGLE: true
-PRED_WEIGHT: /home/higuchi/ssd/Desktop/kits_3DUNet/experiment/first_kits/2020-02-16_17-27/weights-e018.hdf5
+USE_LABEL: [1, 0, 1]
+PRED_WEIGHT: /home/higuchi/ssd/Desktop/kits_3DUNet/experiment/binary_classification/2020-02-17_18-24/weights-e006.hdf5

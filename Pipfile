@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 pycodestyle = "*"
 flake8 = "*"
+autopep8 = "*"
 
 [packages]
 tensorboard = "==1.14.0"

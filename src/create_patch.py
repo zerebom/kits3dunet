@@ -1,3 +1,4 @@
+import math
 import SimpleITK as sitk
 import numpy as np
 import pathlib
@@ -19,13 +20,14 @@ pwd
 
 import argparse
 
+
 def ParseArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument('image_volume_list', nargs=2)
     parser.add_argument('label_volume_list', nargs=3)
     # nargs...受け取る引数の数。?なら0 or 1こ
     parser.add_argument('--size', nargs=3, type=int)
-    parser.add_argument('-sd','--save_dir',type=str)
+    parser.add_argument('-sd', '--save_dir', type=str)
     parser.add_argument('-he', '--hist_equal', action='store_true')
     parser.add_argument('-st', '--standardization', action='store_true')
     parser.add_argument("--onehot", help="Whether or not to Onehot Vector is Save data",
@@ -95,9 +97,6 @@ def histgram_equalization(image_array, mask_array, vmin=-750, vmax=750, alpha=0.
 # -----------------new preprocess function ---------------------------
 
 
-import math
-
-
 def getListCropPoint(read_range, pad_range):
     # read_range：パッチの始点の範囲
     # pad_range：始点の基準間隔
@@ -160,7 +159,7 @@ def main(args):
         if args.hist_equal:
             image_array[..., i] = histgram_equalization(SE_array, kid_aray, vmin=-750, vmax=750, alpha=0.5)
         else:
-            image_array[..., i] =SE_array
+            image_array[..., i] = SE_array
         if args.standardization:
             image_array = standardization(image_array)
 
