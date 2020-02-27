@@ -20,10 +20,10 @@ def get_exp_yml(args):
     with open(args.setting_exp_yml_path) as file:
         exp_yaml = yaml.load(file)
 
-    dir_yaml_path = './dir_setting.exp_yml'
+    dir_yaml_path = './dir_setting.yml'
     if dir_yaml_path:
-        with open(dir_yaml_path):
-            dir_yaml = dir_yaml_path
+        with open(dir_yaml_path) as file:
+            dir_yaml = yaml.load(file)
         return exp_yaml, dir_yaml
     else:
         exp_yaml, None

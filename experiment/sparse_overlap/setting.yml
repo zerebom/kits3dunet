@@ -1,7 +1,7 @@
 DIR:
-  ROOT: /home/kakeya/Desktop/higuchi/kits3dunet
-  DATA: /home/kakeya/ssd/kits19/data
-  OWN: /home/kakeya/Desktop/higuchi/kits3dunet/experiment/second_kits
+  ROOT: /home/higuchi/ssd/Desktop/kits_3DUNet
+  DATA: /home/higuchi/ssd/Desktop/kits19/data
+  OWN: /home/higuchi/ssd/Desktop/kits_3DUNet/experiment/sparse_overlap
 CID:
   TRAIN: ['000', '003', '004', '006', '007', '009', '010', '014', '015', '018', '027',
     '031', '032', '033', '037', '039', '040', '049', '050', '052', '062', '063', '064',
@@ -14,10 +14,11 @@ CID:
   TEST: ['001', '017', '020', '022', '043', '082', '094', '115', '120', '137', '173',
     '174', '205']
 PATCH_DIR:
-  TRAIN: tumor_60x60x20
-  VAL: tumor_48x48x16
+  TRAIN: tumor_60x60x20_332
+  VAL: tumor_48x48x16_332
 PATCH_SHAPE: [48, 48, 16, 1]
 BATCH_SIZE: 16
 GENERATOR: Generator
 SINGLE: true
-PRED_WEIGHT: experiment/second_kits/2020-02-19_00-31/weights-e025.hdf5
+PRED_WEIGHT: experiment/sparse_overlap/2020-02-21_19-51/weights-e050.hdf5
+
